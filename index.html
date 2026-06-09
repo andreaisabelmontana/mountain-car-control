@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mountain Car Control — Built From Scratch</title>
+<meta name="description" content="An original from-scratch build of the classic Mountain Car reinforcement-learning problem: an underpowered car that must learn to swing back and forth to escape a valley." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#c2410c; --accent-soft:#fdf0e9; --ink:#241710; --muted:#6a5448;
+    --line:#ecdfd6; --bg:#fdfaf7; --card:#ffffff;
+    --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:0 28px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.86em;background:var(--accent-soft);padding:.1em .4em;border-radius:4px;color:#9a3412}
+  h1,h2,h3{font-family:var(--serif);font-weight:500;line-height:1.15;letter-spacing:-.01em}
+  header.hero{padding:88px 0 56px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 22px}
+  h1{font-size:clamp(2.6rem,6vw,4.1rem);margin:0 0 18px}
+  .lede{font-size:1.22rem;color:var(--muted);max-width:62ch;margin:0 0 28px}
+  .meta{display:flex;flex-wrap:wrap;gap:10px;font-size:.82rem}
+  .chip{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--muted);background:var(--card)}
+  section{padding:54px 0;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 14px}
+  h2{font-size:clamp(1.7rem,3.4vw,2.3rem);margin:0 0 20px}
+  h3{font-size:1.2rem;margin:0 0 6px}
+  p{margin:0 0 18px;max-width:68ch}
+  .muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:8px}
+  .tool{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .tool .t{font-family:var(--mono);font-size:.78rem;color:var(--accent);letter-spacing:.04em;margin-bottom:8px}
+  .tool h3{font-size:1.05rem;font-family:var(--sans);font-weight:600;margin-bottom:6px}
+  .tool p{font-size:.92rem;color:var(--muted);margin:0}
+  ol.flow{counter-reset:s;list-style:none;padding:0;margin:24px 0 0}
+  ol.flow li{position:relative;padding:18px 0 18px 56px;border-top:1px solid var(--line)}
+  ol.flow li:before{counter-increment:s;content:counter(s,decimal-leading-zero);position:absolute;left:0;top:18px;font-family:var(--mono);font-size:.8rem;color:var(--accent);border:1px solid var(--line);border-radius:8px;width:38px;height:38px;display:grid;place-items:center;background:var(--card)}
+  ol.flow li h3{font-family:var(--sans);font-size:1.02rem;font-weight:600;margin:0 0 4px}
+  ol.flow li p{margin:0;font-size:.93rem;color:var(--muted)}
+  .callout{background:var(--accent-soft);border:1px solid #f3cdb6;border-radius:14px;padding:24px 26px;margin-top:8px}
+  .callout p:last-child{margin:0}
+  ul.learn{list-style:none;padding:0;margin:8px 0 0}
+  ul.learn li{padding:14px 0 14px 30px;border-top:1px solid var(--line);position:relative;color:var(--muted);max-width:68ch}
+  ul.learn li:before{content:"→";position:absolute;left:0;color:var(--accent);font-family:var(--mono)}
+  ul.learn li b{color:var(--ink);font-weight:600}
+  .price{display:flex;align-items:baseline;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 26px;margin-top:8px}
+  .price .n{font-family:var(--serif);font-size:2.6rem;color:var(--accent);line-height:1}
+  .price .l{color:var(--muted);font-size:.95rem}
+  footer{padding:48px 0 80px}
+  .credit{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .credit .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  footer .fine{font-size:.8rem;color:var(--muted);margin-top:22px;text-align:center}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">From-Scratch Build · Reinforcement Learning</p>
+    <h1>Mountain Car Control</h1>
+    <p class="lede">An underpowered car sits at the bottom of a valley. Its engine isn't strong enough to drive straight up — the only way out is to learn to rock backwards first, then forwards, building momentum. I rebuilt this classic control problem from scratch because it's the cleanest demonstration of an agent discovering a non-obvious strategy on its own.</p>
+    <div class="meta">
+      <span class="chip">Python</span><span class="chip">Q-learning</span><span class="chip">Gymnasium</span>
+      <span class="chip">Tile coding</span><span class="chip">Value functions</span><span class="chip">Control</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">What it is</p>
+    <h2>A car that has to go the wrong way first</h2>
+    <p>Mountain Car is one of the oldest benchmarks in reinforcement learning, and it earns its place: the obvious action — full throttle towards the goal — never works. The agent has to learn the counter-intuitive move of accelerating <i>away</i> from the flag to gather enough momentum to make the climb. Nobody tells it this. It has to find it.</p>
+    <p>What makes it a perfect rebuild is that the whole problem lives in just two numbers — position and velocity — yet it still forces you to confront the central puzzle of RL: how does an agent assign credit to an early action whose payoff only arrives many steps later?</p>
+    <div class="price">
+      <div class="n">2</div>
+      <div class="l">state variables — position and velocity — is all it takes to make delayed reward and exploration genuinely hard.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">The stack</p>
+    <h2>From environment to learned policy</h2>
+    <p class="muted">A compact RL toolkit, built to expose the learning loop rather than hide it.</p>
+    <div class="grid">
+      <div class="tool"><div class="t">environment</div><h3>Physics &amp; reward</h3><p>The valley dynamics: gravity, a weak engine, and a reward that drips out −1 per step until the flag is reached.</p></div>
+      <div class="tool"><div class="t">algorithm</div><h3>Q-learning</h3><p>Learn the value of each action in each state by bootstrapping from the agent's own evolving estimates.</p></div>
+      <div class="tool"><div class="t">representation</div><h3>Tile coding</h3><p>The state is continuous, so discretise it into overlapping tiles — a cheap, classic way to approximate a value function.</p></div>
+      <div class="tool"><div class="t">exploration</div><h3>ε-greedy</h3><p>Mostly exploit the best-known action, but sometimes try something random — without it, the car never discovers the swing.</p></div>
+      <div class="tool"><div class="t">tuning</div><h3>Learning schedule</h3><p>Decay the learning rate and exploration over time so early chaos settles into a stable, repeatable policy.</p></div>
+      <div class="tool"><div class="t">readout</div><h3>Value surface</h3><p>Plot the learned value over position × velocity — you can literally see the agent's plan emerge as a landscape.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Architecture</p>
+    <h2>The learning loop</h2>
+    <p>Every episode is the same loop, run thousands of times until the policy converges:</p>
+    <ol class="flow">
+      <li><h3>Observe</h3><p>Read the car's current position and velocity from the environment.</p></li>
+      <li><h3>Choose</h3><p>Pick an action — push left, coast, or push right — mostly greedy, sometimes exploratory.</p></li>
+      <li><h3>Act &amp; sense</h3><p>Apply the action, let the physics step forward, and collect the reward and new state.</p></li>
+      <li><h3>Update</h3><p>Adjust the value estimate for the action just taken using the temporal-difference error.</p></li>
+      <li><h3>Repeat</h3><p>Loop until the flag is reached, then start a fresh episode — slowly sharpening the policy.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="kicker">Reflection</p>
+    <h2>What rebuilding it taught me</h2>
+    <ul class="learn">
+      <li><b>Delayed reward is the whole game.</b> The hard part isn't acting — it's learning that a step taken now matters because of a flag reached fifty steps later.</li>
+      <li><b>Continuous states need representation.</b> You can't tabulate every position and velocity; tile coding is the bridge from infinite states to a learnable table.</li>
+      <li><b>Exploration is non-negotiable.</b> A purely greedy agent gets stuck rolling gently in the valley forever; randomness is what finds the swing.</li>
+      <li><b>Reward shape dictates behaviour.</b> The −1-per-step penalty quietly teaches urgency — change the reward and the whole strategy changes.</li>
+      <li><b>Convergence is a craft.</b> Getting the learning rate and exploration decay right is the difference between a policy that stabilises and one that thrashes.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="credit">
+      <div class="k">About this build</div>
+      <p style="margin:0">An original, from-scratch build by <b>Andrea</b> — written to learn reinforcement learning hands-on: value functions, temporal-difference updates, function approximation and the exploration–exploitation trade-off. Plain HTML/CSS, deployed on GitHub Pages.</p>
+    </div>
+    <p class="fine">Built from scratch by Andrea · one of an ongoing series of learning builds.</p>
+  </div>
+</footer>
+</body>
+</html>
